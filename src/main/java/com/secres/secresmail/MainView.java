@@ -58,7 +58,7 @@ public class MainView extends VerticalLayout {
     public MainView() {
         final LoginOverlay loginOverlay = new LoginOverlay();
         LoginI18n i18n = LoginI18n.createDefault();
-        i18n.setAdditionalInformation("Enable less secure app access to log in");
+        i18n.setAdditionalInformation("Allow less secure app access and unlock captcha to log in");
         loginOverlay.setI18n(i18n);
         loginOverlay.setOpened(true);
         loginOverlay.setForgotPasswordButtonVisible(false);
