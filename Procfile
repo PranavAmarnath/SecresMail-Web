@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -jar target/*.jar $JAR_OPTS
+web: java -jar target/secresmail-web-1.0-SNAPSHOT.jar $PORT
