@@ -2,20 +2,19 @@ package com.secres.secresmail;
 
 import com.sun.mail.imap.IMAPFolder;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.login.AbstractLogin;
 import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.login.LoginOverlay;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.PWA;
 import jakarta.mail.*;
 import jakarta.mail.event.MessageChangedEvent;
 import jakarta.mail.event.MessageChangedListener;
 import jakarta.mail.event.MessageCountAdapter;
 import jakarta.mail.event.MessageCountEvent;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,13 +32,9 @@ import java.util.Properties;
  * A new instance of this class is created for every new user and every
  * browser tab/window.
  */
-@Route
-@PWA(name = "SecresMail",
-        shortName = "SecresMail",
-        description = "This is an example Vaadin application.",
-        enableInstallPrompt = false)
+@Route(value = "login")
 @PageTitle("Login | SecresMail")
-public class MainView extends VerticalLayout {
+public class LoginView extends VerticalLayout {
 
     private String USERNAME;
     private String PASSWORD;
@@ -49,14 +44,15 @@ public class MainView extends VerticalLayout {
     private static ArrayList<EmailBean> rowList = new ArrayList<>();
     private static Message[] messages;
     private UI ui = UI.getCurrent();
+    private static LoginOverlay loginOverlay;
 
     /**
      * Construct a new Vaadin view.
      * <p>
      * Build the initial UI state for the user accessing the application.
      */
-    public MainView() {
-        final LoginOverlay loginOverlay = new LoginOverlay();
+    public LoginView() {
+        loginOverlay = new LoginOverlay();
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setAdditionalInformation("Allow less secure app access and unlock captcha to log in");
         loginOverlay.setI18n(i18n);
@@ -65,20 +61,18 @@ public class MainView extends VerticalLayout {
         loginOverlay.setTitle("SecresMail");
         loginOverlay.setDescription("A Mail Client for the Web");
 
-        if(TableView.getGrid() != null) {
-            rowList.clear(); // clear when going back to login screen
-            TableView.getGrid().setItems(rowList);
-        }
-
         loginOverlay.addLoginListener(e -> {
             USERNAME = e.getUsername();
             PASSWORD = e.getPassword();
             boolean isAuthenticated = authenticate(e);
             if(isAuthenticated) {
+                if(MailView.getGrid() != null) {
+                    rowList.clear(); // clear when logging in
+                    MailView.getGrid().setItems(rowList);
+                }
                 loginOverlay.getUI().ifPresent(ui -> ui.navigate("mail"));
                 loginOverlay.setOpened(false);
-                rowList.clear(); // clear
-                TableView.getGrid().setItems(rowList);
+
                 new Thread(() -> {
                     try {
                         messages = emailFolder.getMessages();
@@ -97,8 +91,8 @@ public class MainView extends VerticalLayout {
                             rowList.add(row);
 
                             ui.access(() -> {
-                                TableView.getGrid().setItems(rowList);
-                                TableView.getGrid().getDataProvider().refreshAll();
+                                MailView.getGrid().setItems(rowList);
+                                MailView.getGrid().getDataProvider().refreshAll();
                             });
                         }
                     } catch (MessagingException messagingException) {
@@ -158,8 +152,8 @@ public class MainView extends VerticalLayout {
                             rowList.add(0, new EmailBean(message.getSubject(), message.isSet(Flags.Flag.SEEN), message.getFrom()[0], message.getSentDate()));
 
                             ui.access(() -> {
-                                TableView.getGrid().setItems(rowList);
-                                TableView.getGrid().getDataProvider().refreshAll();
+                                MailView.getGrid().setItems(rowList);
+                                MailView.getGrid().getDataProvider().refreshAll();
                             });
 
                             messages = emailFolder.getMessages(); // update messages array length
@@ -180,8 +174,8 @@ public class MainView extends VerticalLayout {
                             rowList.remove((messages.length - 1) - Arrays.asList(messages).indexOf(message));
 
                             ui.access(() -> {
-                                TableView.getGrid().setItems(rowList);
-                                TableView.getGrid().getDataProvider().refreshAll();
+                                MailView.getGrid().setItems(rowList);
+                                MailView.getGrid().getDataProvider().refreshAll();
                             });
 
                             emailFolder.expunge();
@@ -206,8 +200,8 @@ public class MainView extends VerticalLayout {
                                 // Set message read value to server's value
                                 rowList.get((messages.length - 1) - Arrays.asList(messages).indexOf(e.getMessage())).setRead(e.getMessage().isSet(Flags.Flag.SEEN));
                                 ui.access(() -> {
-                                    TableView.getGrid().setItems(rowList);
-                                    TableView.getGrid().getDataProvider().refreshAll();
+                                    MailView.getGrid().setItems(rowList);
+                                    MailView.getGrid().getDataProvider().refreshAll();
                                 });
                             }
                         } catch (Exception e1) {
@@ -253,6 +247,10 @@ public class MainView extends VerticalLayout {
 
     public static List<EmailBean> getRowList() {
         return rowList;
+    }
+
+    public static LoginOverlay getLoginOverlay() {
+        return loginOverlay;
     }
 
 }

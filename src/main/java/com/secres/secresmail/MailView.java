@@ -1,30 +1,20 @@
 package com.secres.secresmail;
 
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridSelectionModel;
 import com.vaadin.flow.component.gridpro.GridPro;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.selection.SelectionModel;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.mail.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
-import java.util.Set;
 
 @Route(value = "mail")
 @PageTitle("Mail | SecresMail")
-public class TableView extends VerticalLayout {
+public class MailView extends VerticalLayout {
 
     private static GridPro<EmailBean> grid;
 
@@ -33,24 +23,32 @@ public class TableView extends VerticalLayout {
      * <p>
      * Build the initial UI state for the user accessing the application.
      */
-    public TableView() {
-        createAndShowGrid();
+    public MailView() {
+        createAndShowGUI();
     }
 
-    private void createAndShowGrid() {
+    private void createAndShowGUI() {
+        try {
+            if (LoginView.getLoginOverlay() != null) {
+                LoginView.getLoginOverlay().setOpened(false);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
         grid = new GridPro<>();
         grid.addColumn(EmailBean::getSubject).setHeader("Subject")/*.setSortable(true)*/;
         grid.addEditColumn(EmailBean::getRead).checkbox((item, newValue) -> {
             item.setRead(newValue);
             try {
-                MainView.getFolder().setFlags(new Message[]{MainView.getMessages()[(MainView.getMessages().length - 1) - MainView.getRowList().indexOf(item)]}, new Flags(Flags.Flag.SEEN), newValue);
+                LoginView.getFolder().setFlags(new Message[]{LoginView.getMessages()[(LoginView.getMessages().length - 1) - LoginView.getRowList().indexOf(item)]}, new Flags(Flags.Flag.SEEN), newValue);
             } catch (MessagingException e) {
                 e.printStackTrace();
             }
         }).setHeader("Read")/*.setSortable(true)*/;
         grid.addColumn(EmailBean::getFrom).setHeader("From")/*.setSortable(true)*/;
         grid.addColumn(EmailBean::getDate).setHeader("Date")/*.setSortable(true)*/;
-        grid.setItems(MainView.getRowList());
+        grid.setItems(LoginView.getRowList());
 
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
@@ -64,11 +62,11 @@ public class TableView extends VerticalLayout {
                 Object content = null;
                 String email = null;
                 try {
-                    if (!MainView.getFolder().isOpen()) {
-                        MainView.getFolder().open(Folder.READ_WRITE);
+                    if (!LoginView.getFolder().isOpen()) {
+                        LoginView.getFolder().open(Folder.READ_WRITE);
                     }
-                    int index = (MainView.getMessages().length - 1) - MainView.getRowList().indexOf(selected.get());
-                    message = MainView.getMessages()[index];
+                    int index = (LoginView.getMessages().length - 1) - LoginView.getRowList().indexOf(selected.get());
+                    message = LoginView.getMessages()[index];
                     content = message.getContent();
                     //mailTable.getModel().setValueAt(true, mailTable.convertRowIndexToModel(mailTable.getSelectedRow()), 1);
                     //ListModel<Object> model = (ListModel<Object>) attachmentsList.getModel();
