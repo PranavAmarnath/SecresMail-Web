@@ -14,6 +14,7 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -23,6 +24,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
         shortName = "SecresMail",
         description = "This is an example Vaadin application.",
         enableInstallPrompt = false)
+@PageTitle("Home | SecresMail")
 @Tag("home-view")
 @JsModule("./src/views/home-view.js")
 public class HomeView extends PolymerTemplate<TemplateModel> {
